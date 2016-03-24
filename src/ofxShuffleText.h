@@ -8,58 +8,32 @@
 #pragma once
 #include "ofMain.h"
 
+#define OFX_SHUFFLE_TEXT_NUMBERS 0x0001
+#define OFX_SHUFFLE_TEXT_UPPER_LETTERS 0x0002
+#define OFX_SHUFFLE_TEXT_LOWER_LETTERS 0x0004
+#define OFX_SHUFFLE_TEXT_SYMBOLS 0x0008
+
 class ofxShuffleText {
-private:
-    const string NUMBERS = "0123456789";
-    const string UPPER_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    const string LOWER_LETTERS = "abcdefghijklmnopqrstuvwxyz";
-    const string SYMBOLS = ",.?/\\(^)![]{}*&^%$#'\"";
-    ofTrueTypeFont _font;
-    string _text;
-    string _originalText;
-    float _speed;
-    float _delay;
-    int _startTime;
-    bool _bReady = false, _bRunning = false, _bFill = false;
-    int _index;
-    int _shuffleLength;
-    string _randomChars;
-    
-    string generateRandomText(int length) {
-        string text = "";
-        int r = 0;
-        for (int i = 0; i < length; i++) {
-            r = floor(ofRandom(_randomChars.length()));
-            text += _randomChars[r];
-        }
-        return text;
-    }
 
 public:
-    ofxShuffleText() {
-    }
+    ofxShuffleText()
+        : _text("")
+        , _originalText("")
+        , _speed(2.f)
+        , _delay(0)
+        , _startTime(0)
+        , _bReady(false)
+        , _bRunning(false)
+        , _bFill(false)
+        , _index(0)
+        , _shuffleLength(4)
+        , _randomChars(NUMBERS + UPPER_LETTERS + LOWER_LETTERS + SYMBOLS) {}
     
-    ~ofxShuffleText() {
-    }
+    virtual ~ofxShuffleText() {}
     
-    void setup(ofTrueTypeFont &font,
-               string text,
-               bool bFill = true,
-               float speed = 2.f,
-               int shuffleLength = 4,
-               bool bNumbers = true,
-               bool bUpperLetters = true,
-               bool bLowerLetters = true,
-               bool bSymbols = true) {
+    void setup(const ofTrueTypeFont &font, string text) {
         _font = font;
         _originalText = text;
-        _bFill = bFill;
-        _speed = speed;
-        _shuffleLength = shuffleLength;
-        _randomChars += bNumbers ? NUMBERS : "";
-        _randomChars += bUpperLetters ? UPPER_LETTERS : "";
-        _randomChars += bLowerLetters ? LOWER_LETTERS : "";
-        _randomChars += bSymbols ? SYMBOLS : "";
     }
     
     void update() {
@@ -104,17 +78,28 @@ public:
         _font.drawString(_text, x, y);
     }
     
-    void start(float delay = 0.f) {
+    void start(float speed, float delay, bool bFill, int shuffleLength = 4) {
         _text = "";
-        _index = 0;
-        _startTime = 0;
+        _speed = speed;
         _delay = delay;
+        _startTime = 0;
+        _index = 0;
+        _shuffleLength = shuffleLength;
         _bReady = false;
         _bRunning = true;
+        _bFill = bFill;
     }
     
     void stop() {
         if (_bRunning) _bRunning = false;
+    }
+    
+    void setRandomChars(int flag) {
+        _randomChars = "";
+        if (flag & OFX_SHUFFLE_TEXT_NUMBERS) _randomChars += NUMBERS;
+        if (flag & OFX_SHUFFLE_TEXT_UPPER_LETTERS) _randomChars += UPPER_LETTERS;
+        if (flag & OFX_SHUFFLE_TEXT_LOWER_LETTERS) _randomChars += LOWER_LETTERS;
+        if (flag & OFX_SHUFFLE_TEXT_SYMBOLS) _randomChars += SYMBOLS;
     }
     
     void setFont(ofTrueTypeFont &font) {
@@ -144,4 +129,33 @@ public:
     bool isRunning() {
         return _bRunning;
     }
+
+private:
+    const string NUMBERS = "0123456789";
+    const string UPPER_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const string LOWER_LETTERS = "abcdefghijklmnopqrstuvwxyz";
+    const string SYMBOLS = "!#@$%^&*_+-\\";
+    ofTrueTypeFont _font;
+    string _text;
+    string _originalText;
+    float _speed;
+    float _delay;
+    int _startTime;
+    int _index;
+    int _shuffleLength;
+    bool _bReady;
+    bool _bRunning;
+    bool _bFill;
+    string _randomChars;
+    
+    string generateRandomText(int length) {
+        string text = "";
+        int r = 0;
+        for (int i = 0; i < length; i++) {
+            r = floor(ofRandom(_randomChars.length()));
+            text += _randomChars[r];
+        }
+        return text;
+    }
+
 };
